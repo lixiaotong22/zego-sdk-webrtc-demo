@@ -4,21 +4,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <p>这是测试页面</p>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" type="text/css" href="./font_Icon/iconfont.css">
+    <link rel="stylesheet" type="text/css" href="./css/chat.css">
+        <!-- Bootstrap CSS -->
     <style>
+        .bg-f2 {
+            background-color: #f8f9fa;
+        }
+
         video {
             width: 320px;
             height: auto;
         }
+
+        .videoRow {
+            margin-top: 30px;
+        }
+
+        #previewLabel {
+            display: block;
+            position: absolute;
+        }
+    </style>
     </style>
 </head>
 <body>
+    <div style="height: 320px;margin-bottom: 2px;">
+        <p>这是测试页面</p>
+        <button id="bt_push">开启房间（推流）</button>
+        <button id="bt_out">关闭房间</button>
+        <button id="bt_pull">拉流</button>
+        <div style="padding-top: 4px;">
+            <!-- <div style="float: left;"> -->
+                <video id="vd_preview" autoplay muted playsinline style="float: left;"></video>
+            <!-- <div style="float: right;"> -->
+                <video id="vd_remote" autoplay muted playsinline style="float: right;"></video>
+        </div>
+    </div>
     
-    <button id="openbt" >开启房间（推流）</button>
-    <button id="closebt" >关闭房间</button>
-    <button id="playbt" >拉流</button>
-    <video id="previewvd" autoplay muted playsinline></video><br>
-    <video id="remotevd" autoplay muted playsinline></video>
+    <!-- IM 聊天模块 -->
+    <div style="height: 400px;margin-top: 4px;">
+        <div class="chatBox-info">
+            <div class="chatBox-content-demo" id="chatBox-content-demo"></div>
+        </div>
+        <div class="chatBox-send">
+            <div class="div-textarea" contenteditable="true"></div>
+            <div>
+                <button id="chat-fasong" class="btn-default-styles"><i class="iconfont icon-fasong"></i>
+                </button>
+                
+            </div><br><br>
+            <input id="i_rev_user"  >
+            <button id="bt_custom_message" class=".icon-xiaoxi2" >指定消息按钮</button>
+        </div>
+            
+    </div>
+    
+
 </body>
 <script src="./bundle.js"></script>
 </html>
