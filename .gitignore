@@ -2,7 +2,7 @@
 
 # compiled output
 /.vscode
-/dist/bundle.js
+/dist
 /tmp
 /out-tsc
 
@@ -45,4 +45,4 @@ Thumbs.db
 /script
 /zip
 
-package-lock.json
+/package-lock.json

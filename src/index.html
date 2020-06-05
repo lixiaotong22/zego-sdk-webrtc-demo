@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Express-SDK-demo</title>
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/styles.min.css">
+</head>
+
+<body
+    style="padding: 70px;padding-right: 90px;padding-top: 20px;background-color: #f8f9fa;padding-bottom: 90px;padding-left: 90px;">
+    <div style="background-color: #ffffff;">
+        <div class="head-div" style="background-color: #347ef6;"><span
+                style="color: #ffffff;margin-left: 0px;font-size: 26px;line-height: 38px;letter-spacing: 1px;font-weight: bold;">集成Express-SDK-web的互动视频demo</span><img
+                class="border rounded-circle border-primary" src="assets/img/favicon.png"
+                style="margin-right: 0px;margin-left: 190px;padding-right: 0px;padding-left: 0px;"></div>
+        <div class="content-div" style="margin-top: 60px;">
+            <!-- <div class="d-inline-flex" style="margin-left: 20px;"><label
+                style="font-weight: normal;letter-spacing: 1px;">appID：</label><input id="i_appID" type="text"></div> -->
+            <div class="d-inline-flex" style="margin-left: 20px;">
+                <label style="letter-spacing: 1px;font-weight: normal;">roomID：</label><input id="i_roomID" type="text">
+            </div>
+            <div class="d-inline-flex" style="margin-left: 35px;margin-top: 20px;">
+                <label class="text-nowrap" style="letter-spacing: 1px;font-weight: normal;">房间人员（roomUserList）:&nbsp;
+                    &nbsp;</label>
+                    <select class="custom-select custom-select-sm" id="userList">
+
+                    </select>
+            </div>
+        </div>
+        <div style="margin-top: 26px;">
+            <button class="btn btn-primary" id="btn-enter-push" type="button">进入房间（推流）</button>
+            <button class="btn btn-primary" id="btn-enter-pull" type="button"
+                style="margin-left: 8px;">进入房间（不推流）</button>
+            <button class="btn btn-primary" id="btn-out" type="button" style="margin-left: 8px;">退出房间</button>
+            <button class="btn btn-primary" id="btn-start-mix" type="button" style="margin-left: 8px;">发起混流</button>
+            <button class="btn btn-primary" id="btn-stop-mix" type="button" style="margin-left: 8px;">停止混流</button>
+            <button class="btn btn-primary" id="btn-start-contact" type="button" style="margin-left: 8px;">发起连麦</button>
+            <button class="btn btn-primary" id="btn-stop-contact" type="button" style="margin-left: 8px;">停止连麦</button>
+        </div>
+        <div style="height: 160px;margin-top: 26px;">
+            <video id="vd_preview" autoplay muted playsinline></video>
+            <video id="vd_remote" autoplay playsinline style="margin-left: 60px;"></video>
+        </div>
+        <div style="height: 160px;margin-top: 26px;text-align: center;"><video id="vd_mix" autoplay playsinline></video>
+        </div>
+    </div>
+
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+</body>
+
+</html>
