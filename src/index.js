@@ -8,8 +8,9 @@ import flvjs from 'flv.js';
 require("./assets/css/chat.css");
 require("./assets/css/styles.min.css");
 
-const appID = 3293366674, // 必填，appID
-    server = 'wss://webliveroom-test.zego.im/ws';
+const appID = 2452251574, // 必填，appID
+    server = 'wss://webliveroom-test.zego.im/ws',
+    LogUrl = 'wss://weblogger-test.zego.im/log';
 // appSigin = 'a8721f34e19651914d3e800ee1855973b842bdc4a3a432fd4c3f728ef0923d55', // appSigin为即构给客户分配的秘钥，请勿泄漏；（测试环境下是生成token的密码，必填，正式环境需要放到服务端）
 
 var roomID; //房间号
@@ -56,6 +57,11 @@ let msgCount = 0; //消息总数
 
 
 const zg = new ZegoExpressEngine(appID, server); //zego引擎对象
+zg.setLogConfig({
+    logLevel: 'debug',
+    logURL: LogUrl,
+    remoteLogLevel: 'debug',
+});
 
 function initSDK() {
     //房间状态更新回调
@@ -122,7 +128,7 @@ function initSDK() {
     })
     // 订阅推流质量回调
     zg.on('publishQualityUpdate', (streamID, stats) => {
-        console.log(`推流质量: >>> streamID:${streamID}，stats：${stats}`);
+        console.log(`推流质量: >>> streamID:${streamID}，stats：${JSON.stringify(stats)}`);
     })
     // 订阅拉流状态回调
     zg.on('playerStateUpdate', result => {
@@ -133,30 +139,41 @@ function initSDK() {
         console.log(`拉流质量: >>> streamID:${streamID}，stats：${stats}`);
     })
     //监听自定义命令信令通知
-    zg.on('IMRecvCustomCommand', (roomID, fromUser, command) => {
+    zg.on('IMRecvCustomCommand',async (roomID, fromUser, command) => {
         console.log('IMRecvCustomCommand:>>>>>>>>>>>>>>>', roomID, fromUser, command);
-        if (command.operation == 'stop') { //收到通知停止拉流
-            zg.stopPlayingStream(remoteStreamID);
-            let remoteVideo = $('#vd_remote')[0];
-            remoteVideo.srcObject = null;
-        } else {
-            if (role == userRole.viewer) {
+        switch (command.operation) {
+            case 'stop':
+                if (remoteStreamID!='') {
+                    await zg.stopPlayingStream(remoteStreamID);
+                    let remoteVideo = $('#vd_remote')[0];
+                    remoteVideo.srcObject = null;
+                    remoteStreamID='';
+                    remoteStream=null;
+                }
+                break;
+
+            case 'contact':
                 var re = confirm(fromUser.userID + ':邀请你连麦，是否同意？')
                 if (re) {
-                    localStreamID = 's' + parseInt(Math.random() * 190000 + 10000); //自动生成,观众端的推流ID
-                    console.log('打印自动生成的推流streamID:>>>>', localStreamID);
-                    pushStream(localStreamID);
-                    sendContactMessage('', localStreamID, fromUser.userID);
-                    eachUserID = fromUser.userID;
-                    console.log('观众连麦的主播，uID：>>>>>', eachUserID);
+                    if (role == userRole.viewer) {
+                        localStreamID = 's' + parseInt(Math.random() * 190000 + 10000); //自动生成,观众端的推流ID
+                        console.log('打印自动生成的推流streamID:>>>>', localStreamID);
+                        pushStream(localStreamID);
+                        sendContactMessage('contact', localStreamID, fromUser.userID);
+                        eachUserID = fromUser.userID;
+                        console.log('观众连麦的主播，uID：>>>>>', eachUserID);
+                    } else if (role == userRole.anchor) {
+                        remoteStreamID = command.streamID; //command是对应角色的streamID
+                        eachUserID = fromUser.userID;
+                        console.log('主播连麦的观众，uID：>>>>>', eachUserID);
+                    }
                 } else {
                     alert('对方拒绝你的连麦请求！')
                 }
-            } else if (role == userRole.anchor) {
-                remoteStreamID = command.streamID; //command是对应角色的streamID
-                eachUserID = fromUser.userID;
-                console.log('主播连麦的观众，uID：>>>>>', eachUserID);
-            }
+                break;
+
+            default:
+                break;
         }
     })
     //房间消息通知
@@ -230,10 +247,10 @@ function getUser() {
 //判断是否处于连麦模式
 //默认已登录，逻辑需修改
 function isContact() {
-    if (remoteStreamID == '') {
-        return false;
-    } else {
+    if (remoteStreamID != '' && localStreamID!='') {
         return true;
+    } else {
+        return false;
     }
 }
 
@@ -295,29 +312,33 @@ async function enterRoom(userID, userName, roomID) {
 async function outRoom() {
     console.log('返回isContact是否连麦状态：>>>>>>>>>>', isContact());
     if (isContact()) { //连麦模式下
+        //停止拉流，清除连麦状态和拉流ID
         zg.stopPlayingStream(remoteStreamID);
         let remoteVideo = $('#vd_remote')[0];
         remoteVideo.srcObject = null;
+        remoteStreamID='';
+        remoteStream=null;
         //通知别人停止拉我的流
         console.log('要通知退出房间的连麦用户uID：>>>>>>>>', eachUserID);
         await sendContactMessage('stop', localStreamID, eachUserID);
-        //停止推拉流，并清理相关状态,销毁流
+        //停止推流，并清理相关状态,销毁流
         await zg.stopPublishingStream(localStreamID);
-        await zg.destroyStream(localStream);
+        zg.destroyStream(localStream);
         let previewVideo = $('#vd_preview')[0];
         previewVideo.srcObject = null;
     } else { //非连麦模式
-        if (role == userRole.anchor) { //是主播
-            //停止推拉流，并清理相关状态,销毁流
+        if(localStreamID!=''){//推流端
+            await sendContactMessage('stop', localStreamID, eachUserID);//通知观众停止拉流
             await zg.stopPublishingStream(localStreamID);
-            await zg.destroyStream(localStream);
+            zg.destroyStream(localStream);
             let previewVideo = $('#vd_preview')[0];
             previewVideo.srcObject = null;
-        } else { //是观众
-            console.log('是观众调试点>>>>>>>>>>>>>>>');
+        }else if(remoteStreamID!=''){
             zg.stopPlayingStream(remoteStreamID);
             let remoteVideo = $('#vd_remote')[0];
             remoteVideo.srcObject = null;
+            remoteStreamID='';
+            remoteStream=null;
         }
     }
     zg.logoutRoom(roomID); //登出房间
@@ -355,7 +376,10 @@ async function pullStream(streamID) {
     //<video>:渲染播放mediaStream数据
     //改进为动态创建video标签，播放
     let remoteVideo = $('#vd_remote')[0];
+    // let remoteVideo=document.createElement('video');
+    // remoteVideo.autoplay="true";
     remoteVideo.srcObject = remoteStream;
+    // $('#video_div').append(remoteVideo);
 }
 
 
@@ -394,6 +418,15 @@ $('#btn-enter-push').click(async function () {
         isEnter = await enterRoom(localUser.userID, localUser.userName, roomID);
         if (isEnter) {
             pushStream(localStreamID);
+            //localVideo 为<video> 对象
+            // let localVideo=$("#externerVideo")[0];
+            // const stream = await zg.createStream({
+            //     custom: {
+            //         source: localVideo
+            //     }
+            // })
+            // //推流
+            // zg.startPublishingStream(localStreamID, stream);
         }
     }
 });
@@ -445,16 +478,16 @@ $('#chat-fasong').click(async function () {
 $('#btn-start-contact').click(function () {
     let toID = $('#userList').val();
     console.log('获取到的toID:>>>>>', toID);
-    if (toID == '')
-        alert('发送邀请的用户ID为空，请重新选择连麦用户：');
-    //默认是从主播端发起，连麦邀请
-    //主播不用传streamID
-    sendContactMessage('', '', toID);
+    if (toID != '' && role == userRole.anchor) {
+        sendContactMessage('contact', localStreamID, toID); //默认只能 从主播端发起，连麦邀请
+    } else {
+        alert(`发起连麦邀请，参数出错：toID：${toID}，role：${role}`);
+    }
 });
 
 //目前只能两个人，逻辑需改变，待修复
 $('#btn-start-mix').click(async () => {
-    const taskID = 'tid7788';
+    const taskID = 'tid' + parseInt(Math.random() * 190000 + 10000);
     const mixStreamID = 'mixID' + parseInt(Math.random() * 190000 + 10000); //自动生成混流ID
     const streamList = [{ //传入需要混流的原本流数据
             streamID: localStreamID,
@@ -504,7 +537,10 @@ $('#btn-start-mix').click(async () => {
                     type: 'flv',
                     url: flvUrl,
                 });
-                flvPlayer.attachMediaElement($('#vd_mix')[0]);
+                let vd_mix = document.createElement('video'); //创建一个video标签
+                vd_mix.autoplay = "true";
+                $("#video_div").append(vd_mix);
+                flvPlayer.attachMediaElement(vd_mix);
                 flvPlayer.load();
             }
         }
