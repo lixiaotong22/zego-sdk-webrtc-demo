@@ -153,8 +153,8 @@ function initSDK() {
                 break;
 
             case 'contact':
-                var re = confirm(fromUser.userID + ':邀请你连麦，是否同意？')
-                if (re) {
+                // var re = confirm(fromUser.userID + ':邀请你连麦，是否同意？')
+                // if (re) {
                     if (role == userRole.viewer) {
                         localStreamID = 's' + parseInt(Math.random() * 190000 + 10000); //自动生成,观众端的推流ID
                         console.log('打印自动生成的推流streamID:>>>>', localStreamID);
@@ -167,9 +167,9 @@ function initSDK() {
                         eachUserID = fromUser.userID;
                         console.log('主播连麦的观众，uID：>>>>>', eachUserID);
                     }
-                } else {
-                    alert('对方拒绝你的连麦请求！')
-                }
+                // } else {
+                //     alert('对方拒绝你的连麦请求！')
+                // }
                 break;
 
             default:
@@ -354,6 +354,7 @@ async function pushStream(streamID) {
             },
         }
     })
+    zg.mutePublishStreamAudio(localStream,false);
     console.log(`'localStream：>>>>', ${localStream}，tppe：${typeof localStream}`);
     //<video>：预览渲染
     let previewVideo = $('#vd_preview')[0];
@@ -418,15 +419,6 @@ $('#btn-enter-push').click(async function () {
         isEnter = await enterRoom(localUser.userID, localUser.userName, roomID);
         if (isEnter) {
             pushStream(localStreamID);
-            //localVideo 为<video> 对象
-            // let localVideo=$("#externerVideo")[0];
-            // const stream = await zg.createStream({
-            //     custom: {
-            //         source: localVideo
-            //     }
-            // })
-            // //推流
-            // zg.startPublishingStream(localStreamID, stream);
         }
     }
 });
@@ -556,4 +548,11 @@ $('.chatBtn').click(function () {
 
     //聊天框默认最底部
     $('#chatBox-content-demo').scrollTop($('#chatBox-content-demo')[0].scrollHeight);
+});
+
+var muteVideo=true;
+//
+$("#btn-stop-video").click(function(){
+    zg.mutePublishStreamVideo(localStream,muteVideo);
+    muteVideo=!muteVideo;
 });
