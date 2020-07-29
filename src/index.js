@@ -1,3 +1,4 @@
+import VConsole from 'vconsole';
 import $ from 'jquery'
 import 'bootstrap/dist/css/bootstrap.css'
 import './assets/font_Icon/iconfont.css';
@@ -15,36 +16,25 @@ import {
     outRoom,
     sendContactMessage,
     sendMessage,
-    startMixer
+    startMixer,
+    zg,
+    setDevices
 } from "./common";
 
+new VConsole();
 var muteVideo = true; //是否关闭流画面，Boolean值
 var isEnter = false; //是否进入房间
 var roomID; //房间号
-// //初始媒体流和角色，登录验证
-// var localStream = null;
-// var localStreamID = ''; //本地流ID
-// var remoteStream = null;
-// var remoteStreamID = ''; //远端流ID
-// var eachUserID = ''; //与我连麦的用户ID，默认只有一个人，后面改成数组
-
-
-
 
 initSDK();
-$(".head-div").append(`<img class="border rounded-circle border-primary" src="${require('./assets/img/favicon.png')}" 
-                style="margin-right: 0px;margin-left: 190px;padding-right: 0px;padding-left: 0px;">`);
 
 
-//监听:进入房间（推流）按钮flvjs
+//监听:进入房间（推流）按钮
 $('#btn-enter-push').click(async () => {
     roomID = $('#i_roomID').val() + '';
     if (isEmpty(roomID)) {
         alert('请输入对应的 roomID ');
     } else {
-        // role = userRole.anchor; //设置角色为主播
-        // localStreamID = 's' + parseInt(Math.random() * 190000 + 10000); //自动生成
-        // console.log(`自动生成的推流streamID:>>>> ${localStreamID} `);
         isEnter = await enterRoom(localUser.userID, localUser.userName, roomID, userRole.anchor);
         if (isEnter) {
             pushStream(localStreamID);
@@ -58,7 +48,6 @@ $('#btn-enter-pull').click(async () => {
     if (isEmpty(roomID)) {
         alert('请输入对应的 roomID ');
     } else {
-        // role = userRole.viewer; //设置角色为观众
         isEnter = await enterRoom(localUser.userID, localUser.userName, roomID, userRole.viewer);
     }
 });
@@ -82,7 +71,7 @@ $('#chat-fasong').click(async () => {
 //监听：发起连麦按钮
 $('#btn-start-contact').click(() => {
     let toID = $('#userList').val();
-    if (toID != '' /*&& role == userRole.anchor*/ ) {
+    if (toID != '') {
         sendContactMessage('contact', localStreamID, toID); //默认只能 从主播端发起，连麦邀请//否
     } else {
         alert(`发起连麦邀请，参数出错：toID：${toID}`);
@@ -93,6 +82,7 @@ $('#btn-start-contact').click(() => {
 $('#btn-start-mix').click(() => {
     startMixer();
 });
+
 //打开/关闭聊天框
 $('.chatBtn').click(() => {
     $('.chatBox').toggle();
@@ -100,11 +90,14 @@ $('.chatBtn').click(() => {
     $('#chatBox-content-demo').scrollTop($('#chatBox-content-demo')[0].scrollHeight); //聊天框默认最底部
 });
 
-
-//
-$("#btn-stop-video").click(() => {
-    zg.mutePublishStreamVideo(localStream, muteVideo);
-    muteVideo = !muteVideo;
+//发起混音
+$("#btn-audio-mixer").click(async () => {
+    let audio1 = [$('#mix-audio')[0]];
+    let re = zg.startMixingAudio(localStreamID, audio1);
+    if (re) {
+        let realyStream = 'zegotest-3212928334-' + localStreamID;
+        zg.streamCenter.publisherList[realyStream].publisher.audioMixList[0].audioMix.gainNode.gain.value = 0.5;//此用于调节背景音 音量的内部对象，暂时性暴露，后续有修改的风险，慎用
+    }
 });
 
 //字符是否为空
@@ -115,3 +108,19 @@ function isEmpty(str) {
         return false;
     }
 }
+
+//切换audio采集设备
+$("#audioDeviceList").change(() => {
+    if (localStream != null) {
+        console.log(">>>>>>>>: " + $("#audioDeviceList").val());
+        zg.useAudioDevice(localStream, $("#audioDeviceList").val());
+    }
+});
+
+//切换video采集设备
+$("#videoDeviceList").change(() => {
+    if (localStream != null) {
+        console.log(">>>>>>>>: " + $("#videoDeviceList").val());
+        zg.useVideoDevice(localStream, $("#videoDeviceList").val());
+    }
+});

@@ -4,7 +4,7 @@ import {
     ZegoExpressEngine
 } from 'zego-express-engine-webrtc'
 
-const appID = 2452251574, // 必填，appID
+const appID = 3212928334, // 必填，appID
     server = 'wss://webliveroom-test.zego.im/ws',
     LogUrl = 'wss://weblogger-test.zego.im/log';
 
@@ -34,13 +34,16 @@ zg.setLogConfig({
 });
 
 function initSDK() {
+    $(".head-div").append(`<img class="border rounded-circle border-primary" src="${require('./assets/img/favicon.png')}" 
+                style="margin-right: 0px;margin-left: 190px;padding-right: 0px;padding-left: 0px;">`);
+
     //房间状态更新回调
     zg.on('roomStateUpdate', (roomID, state, errorCode, extendedData) => {
-        console.log(`房间状态：>>> roomID：${roomID} state：${state}，errorCode：${errorCode}，extendedData:${extendedData}`);
+        console.warn(`roomStateUpdate, roomID：${roomID} state：${state}，errorCode：${errorCode}，extendedData:${JSON.stringify(extendedData)}`);
     })
     //房间用户进出回调
     zg.on('roomUserUpdate', (roomID, updateType, userList) => {
-        console.warn(`roomUserUpdate: room ${roomID}, user ${updateType === 'ADD' ? 'added' : 'left'} `, JSON.stringify(userList));
+        console.warn(`roomUserUpdate, room: ${roomID}, user: ${updateType === 'ADD' ? 'added' : 'left'}, userList: ${JSON.stringify(userList)}`);
         if (updateType === 'ADD') {
             userList.forEach(user => { //这里逻辑待改进
                 localUserList.push(user); //增加
@@ -51,9 +54,7 @@ function initSDK() {
             });
         }
         let userListHtml = '';
-        console.warn('走到这里了', localUserList[0].userID);
         localUserList.forEach(user => {
-            console.warn('走进来了', user);
             //这部分逻辑待修改
             user.userID !== localUser.userID && (userListHtml += `<option value= ${user.userID}>${user.userName}</option>`);
         });
@@ -61,13 +62,11 @@ function initSDK() {
     })
     // 需要更改拉流逻辑，连麦状态下，不拉取本地流
     // 订阅拉流更新回调
-    zg.on('roomStreamUpdate', function (roomID, updateType, streamList) {
-        console.log('房间流更新回调：', 'roomID : ' + roomID + '\n type： ' + updateType + '\n streamList:' + streamList);
+    zg.on('roomStreamUpdate', (roomID, updateType, streamList) => {
+        console.warn(`roomStreamUpdate, roomID: ${roomID} type: ${updateType} streamList: ${JSON.stringify(streamList)}`);
         if (updateType == 'ADD') {
-            console.info('开始遍历:>>>>>>>');
             for (let index = 0; index < streamList.length; index++) {
                 const element = streamList[index];
-                console.info(element.s + 'was add');
                 userStreamList.push(element)
                 pullStream(element.streamID);
             }
@@ -80,7 +79,6 @@ function initSDK() {
                         } catch (error) {
                             console.error(error);
                         }
-                        console.info(userStreamList[k].streamID + 'was devared');
                         userStreamList.splice(k, 1);
                         $('#vd_remote')[0].srcObject = null;
                         break;
@@ -91,23 +89,23 @@ function initSDK() {
     })
     //订阅推流状态回调
     zg.on('publisherStateUpdate', result => {
-        console.log(`推流状态: >>> streamID：${result.streamID}，state：${result.state}，errorCode:${result.errorCode}，extendedData：${result.extendedData}`);
+        console.warn(`publisherStateUpdate, result:${JSON.stringify(result)}`);
     })
     // 订阅推流质量回调
     zg.on('publishQualityUpdate', (streamID, stats) => {
-        console.log(`推流质量: >>> streamID:${streamID}，stats：${JSON.stringify(stats)}`);
+        console.warn(`publishQualityUpdate, streamID:${streamID}，stats：${JSON.stringify(stats)}`);
     })
     // 订阅拉流状态回调
     zg.on('playerStateUpdate', result => {
-        console.log(`拉流状态: >>> streamID：${result.streamID}，state：${result.state}，errorCode:${result.errorCode}，extendedData：${result.extendedData}`);
+        console.warn(`playerStateUpdate, streamID：${result.streamID}，state：${result.state}，errorCode:${result.errorCode}，extendedData：${result.extendedData}`);
     })
     // 订阅拉流质量回调
     zg.on('playQualityUpdate', (streamID, stats) => {
-        console.log(`拉流质量: >>> streamID:${streamID}，stats：${stats}`);
+        console.warn(`playQualityUpdate, streamID:${streamID}，${JSON.stringify(stats)}`);
     })
     //监听自定义命令信令通知
     zg.on('IMRecvCustomCommand', async (roomID, fromUser, command) => {
-        console.log('IMRecvCustomCommand:>>>>>>>>>>>>>>>', roomID, fromUser, JSON.stringify(command));
+        console.warn(`'IMRecvCustomCommand, roomID: ${roomID} fromUser: ${fromUser} command: ${JSON.stringify(command)}`);
         switch (command.operation) {
             case 'stop':
                 if (remoteStreamID != '') {
@@ -140,10 +138,10 @@ function initSDK() {
     })
     //房间消息通知
     zg.on('IMRecvBroadcastMessage', (roomID, chatData) => {
-        console.log('IMRecvBroadcastMessage', roomID, chatData);
+        console.warn(`IMRecvBroadcastMessage, roomID: ${roomID} chatData: ${JSON.stringify(chatData)}`);
 
         var inputMessage = chatData[0].message;
-        console.log('接收消息回调，打印数据：  》》》》》 ', '\n' + inputMessage);
+        console.info('接收消息回调，打印数据：  》》》》》 ', '\n' + inputMessage);
         const chatBox = `
         <div class="clearfloat">
         <div class="author-name"><small class="chat-date">${new Date().toLocaleString()}</small></div>
@@ -160,6 +158,9 @@ function initSDK() {
         $('.chatBox').show();
         $('.chatBox-kuang').show();
     });
+
+    //设置设备
+    setDevices();
 }
 
 //获取token，需业务侧实现
@@ -183,7 +184,7 @@ function getToken(userID) {
 function getUser() {
     let uID = 'uID' + parseInt(Math.random() * 190000 + 5000);
     let uName = 'uName' + parseInt(Math.random() * 190000 + 5000);
-    console.log(`getUser:>>> userID；${uID}，userName：${uName}`);
+    console.log(`getUser: userID；${uID} userName：${uName}`);
     return {
         userID: uID,
         userName: uName
@@ -230,9 +231,9 @@ async function sendContactMessage(opt, sID, toID) {
     }
     try {
         const res = await zg.sendCustomCommand(roomID, command, [toID]);
-        console.warn('send custom success >>>>>>>>>>' + res.errorCode)
+        console.warn('send custom success >>>>>>>>>>' + JSON.stringify(res))
     } catch (error) {
-        console.error('发送失败：>>>>>>>', JSON.stringify(error))
+        console.error('send custom failed >>>>>>>', JSON.stringify(err))
     }
 }
 
@@ -292,27 +293,31 @@ async function outRoom() {
 
 //推流方法
 async function pushStream(streamID) {
-    console.log('打印的推流streamID:>>>>', streamID);
+    let videoInputString = $("#videoDeviceList").val();
+    console.log(`打印的推流streamID:>>>> ${streamID} ,videoInput: ${videoInputString}`);
     localStream = await zg.createStream({
-        source: {
-            camera: { //camera对象可不传，不传则采用默认设置
-                video: true,
-                audio: true,
-            },
-        }
+        camera: { //camera对象可不传，不传则采用默认设置
+            video: true,
+            audio: true,
+            videoInput:videoInputString,
+            // videoQuality: 4,
+            // width:480,
+            // height:640,
+            // frameRate:15,
+            // bitrate:800,
+        },
     })
-    console.log(`'localStream：>>>>', ${localStream}，tppe：${typeof localStream}`);
+    console.log(`localStream：>>>> ${JSON.stringify(localStream)}`);
     //<video>：预览渲染
     let previewVideo = $('#vd_preview')[0];
     previewVideo.srcObject = localStream;
     //开始推流
-    let result = zg.startPublishingStream(streamID, localStream);
+    let result = zg.startPublishingStream(streamID, localStream, );
     return result; //返回推流结果
 }
 
 //拉流方法
 async function pullStream(streamID) {
-    console.log('开始拉流：>>>>');
     //拉流
     remoteStream = await zg.startPlayingStream(streamID, {
         playOption: {
@@ -320,6 +325,7 @@ async function pullStream(streamID) {
             audio: true
         },
     });
+    console.log('>>>>>>' + remoteStream.active + remoteStream.id + ':::' + remoteStream.onaddtrack + '>' + remoteStream.onremovetrack)
     //<video>:渲染播放mediaStream数据
     //改进为动态创建video标签，播放
     let remoteVideo = $('#vd_remote')[0];
@@ -338,18 +344,18 @@ async function startMixer() {
             layout: {
                 top: 0,
                 left: 0,
-                bottom: 240,
-                right: 320,
+                bottom: 150,
+                right: 200,
             }
         },
         {
             streamID: remoteStreamID,
             contentType: 'VIDEO',
             layout: {
-                top: 240,
-                left: 0,
-                bottom: 480,
-                right: 320,
+                top: 0,
+                left: 200,
+                bottom: 150,
+                right: 400,
             }
         },
     ];
@@ -364,16 +370,16 @@ async function startMixer() {
             outputConfig: {
                 outputBitrate: 300,
                 outputFps: 15,
-                outputWidth: 320,
+                outputWidth: 500,
                 outputHeight: 480,
             },
         });
         if (res.errorCode == 0) {
             const result = JSON.parse(res.extendedData).mixerOutputList;
-            console.log('获取结果:>>>>>>>', result[0].streamID);
+            console.log('获取结果:>>>>>>>', JSON.stringify(result));
             console.log('开始播放混流后的flv：>>>>');
             //播放flv
-            const flvUrl = result[0].flvURL.replace('http', 'https');
+            const flvUrl = "https://hdl-wsdemo.zego.im/miniapp/" + result[0].flvURL;
             console.log('flvUrl:>>>>>>>>>>>>>>  ', flvUrl);
             if (flvjs.isSupported()) {
                 let flvPlayer = flvjs.createPlayer({
@@ -382,6 +388,7 @@ async function startMixer() {
                 });
                 let vd_mix = document.createElement('video'); //创建一个video标签
                 vd_mix.autoplay = "true";
+                vd_mix.controls = "true";
                 $("#video_div").append(vd_mix);
                 flvPlayer.attachMediaElement(vd_mix);
                 flvPlayer.load();
@@ -399,10 +406,26 @@ export {
     localStreamID,
     localStream,
     localUser,
+    zg,
     pushStream,
     enterRoom,
     outRoom,
     sendContactMessage,
     sendMessage,
-    startMixer
+    startMixer,
+    setDevices
+}
+
+async function setDevices() {
+    var devicesInfo = await zg.enumDevices();
+    var camerasHTML = '',
+        microphonesHTML = '';
+    devicesInfo.cameras.forEach(element => {
+        camerasHTML += `<option value= ${element.deviceID}>${element.deviceName}</option>`
+    });
+    devicesInfo.microphones.forEach(element => {
+        microphonesHTML += `<option value= ${element.deviceID}>${element.deviceName}</option>`
+    });
+    $("#videoDeviceList").html(camerasHTML);
+    $('#audioDeviceList').html(microphonesHTML);
 }

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack",
-    "http": "http-server ./dist -p 9090 -S -C cert.pem -K key.pem",
+    "https": "http-server ./dist -p 9090 -S -C cert.pem -K key.pem",
     "dev": "webpack-dev-server --open"
   },
   "author": "",
@@ -16,6 +16,7 @@
     "jquery": "^3.5.1",
     "bootstrap": "^4.5",
     "flv.js": "^1.5.0",
+    "vconsole": "^3.3.4",
     "zego-express-engine-webrtc": "^1.7.0"
   },
   "devDependencies": {

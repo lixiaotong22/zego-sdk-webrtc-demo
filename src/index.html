@@ -5,9 +5,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <title>Express-SDK-demo</title>
+    <script>
+        var close = function () {
+            console.log(`》》》》onunload:被触发》》》》》》》`);
+        }
+    </script>
 </head>
 
-<body
+<body onunload="close()"
     style="padding: 70px;padding-right: 90px;padding-top: 20px;background-color: #f8f9fa;padding-bottom: 90px;padding-left: 90px;">
     <div style="background-color: #ffffff;">
         <div class="head-div" style="background-color: #347ef6;"><span
@@ -18,9 +23,23 @@
                 <label style="letter-spacing: 1px;font-weight: normal;">roomID：</label><input id="i_roomID" type="text">
             </div>
             <div class="d-inline-flex" style="margin-left: 35px;margin-top: 20px;">
-                <label class="text-nowrap" style="letter-spacing: 1px;font-weight: normal;">房间人员（roomUserList）:&nbsp;
+                <label class="text-nowrap" style="letter-spacing: 1px;font-weight: normal;">roomUserList:&nbsp;
                     &nbsp;</label>
                 <select class="custom-select custom-select-sm" id="userList">
+
+                </select>
+            </div>
+            <div class="d-inline-flex" style="margin-left: 35px;margin-top: 20px;">
+                <label class="text-nowrap" style="letter-spacing: 1px;font-weight: normal;">audioDeviceList:&nbsp;
+                    &nbsp;</label>
+                <select class="custom-select custom-select-sm" id="audioDeviceList">
+
+                </select>
+            </div>
+            <div class="d-inline-flex" style="margin-left: 35px;margin-top: 20px;">
+                <label class="text-nowrap" style="letter-spacing: 1px;font-weight: normal;">videoDeviceList:&nbsp;
+                    &nbsp;</label>
+                <select class="custom-select custom-select-sm" id="videoDeviceList">
 
                 </select>
             </div>
@@ -33,11 +52,12 @@
             <button class="btn btn-primary" id="btn-start-mix" type="button" style="margin-left: 8px;">发起混流</button>
             <!-- <button class="btn btn-primary" id="btn-stop-mix" type="button" style="margin-left: 8px;">停止混流</button> -->
             <button class="btn btn-primary" id="btn-start-contact" type="button" style="margin-left: 8px;">发起连麦</button>
-            <button class="btn btn-primary" id="btn-stop-video" type="button" style="margin-left: 8px;">开启/关闭摄像头</button>
+            <button class="btn btn-primary" id="btn-audio-mixer" type="button" style="margin-left: 8px;">发起混音</button>
+            <audio id="mix-audio" src="./music/Amoonfilledsky.mp3" controls muted loop></audio>
         </div>
         <div id="video_div" style="height: 160px;margin-top: 26px;">
-            <video id="vd_preview" autoplay  playsinline></video>
-            <video id="vd_remote" autoplay playsinline style="margin-left: 60px;"></video>
+            <video id="vd_preview" autoplay  playsinline muted ></video>
+            <video id="vd_remote" autoplay playsinline style="margin-left: 60px;" controls></video>
         </div>
         <div id="mix_div" style="height: 160px;margin-top: 26px;text-align: center;">
         </div>
