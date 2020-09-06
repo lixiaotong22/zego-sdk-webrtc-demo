@@ -1,44 +1,50 @@
+require('bootstrap/dist/css/bootstrap.css');
+require('./assets/font_Icon/iconfont.css');
+require('./assets/css/chat.css');
+require('./assets/css/styles.min.css');
 import VConsole from 'vconsole';
-import $ from 'jquery'
-import 'bootstrap/dist/css/bootstrap.css'
-import './assets/font_Icon/iconfont.css';
-require("./assets/css/chat.css");
-require("./assets/css/styles.min.css");
+import $ from 'jquery';
+import flvjs from 'flv.js';
 import {
     initSDK,
-    userRole,
-    localStream,
     localStreamID,
-    remoteStreamID,
+    localStream,
     localUser,
-    enterRoom,
+    zg,
     pushStream,
+    enterRoom,
     outRoom,
-    sendContactMessage,
     sendMessage,
     startMixer,
-    zg,
     setDevices
 } from "./common";
 
 new VConsole();
-var muteVideo = true; //是否关闭流画面，Boolean值
+// var muteVideo = true; //是否关闭流画面，Boolean值
 var isEnter = false; //是否进入房间
 var roomID; //房间号
 
 initSDK();
 
+//枚举设备
+$("#btn-dirver-nume").click(() => {
+    setDevices();
+});
 
 //监听:进入房间（推流）按钮
 $('#btn-enter-push').click(async () => {
     roomID = $('#i_roomID').val() + '';
     if (isEmpty(roomID)) {
         alert('请输入对应的 roomID ');
-    } else {
-        isEnter = await enterRoom(localUser.userID, localUser.userName, roomID, userRole.anchor);
+        return;
+    }
+    if (!isEnter) {
+        isEnter = await enterRoom(localUser.userID, localUser.userName, roomID);
         if (isEnter) {
             pushStream(localStreamID);
         }
+    } else {
+        pushStream(localStreamID);
     }
 });
 
@@ -47,40 +53,55 @@ $('#btn-enter-pull').click(async () => {
     roomID = $('#i_roomID').val() + '';
     if (isEmpty(roomID)) {
         alert('请输入对应的 roomID ');
+        return;
+    }
+    if (!isEnter) {
+        isEnter = await enterRoom(localUser.userID, localUser.userName, roomID);
     } else {
-        isEnter = await enterRoom(localUser.userID, localUser.userName, roomID, userRole.viewer);
+        alert('已经在该房间内，无需再次进入房间 ');
     }
 });
 
 //监听：退出房间按钮
 $('#btn-out').click(() => {
-    console.log(`outRoom：>>> ，传参前的localStream:${localStream}，传参前的localStreamID:${localStreamID}`);
     if (isEnter) {
-        outRoom();
+        outRoom(roomID);
+        isEnter = false;
     } else {
         alert('未登录房间，无需退出!');
+    }
+});
+
+//发起混流任务
+$('#btn-start-mix').click(async () => {
+    let result = await startMixer();
+    console.warn('混流任务的结果， result：', JSON.stringify(result));
+    if (result != "") {
+        if (result.errorCode == 0) {
+            const outputList = JSON.parse(result.extendedData).mixerOutputList;
+            //播放flv
+            const flvUrl = outputList[0].flvURL;
+            console.log('flvUrl:>>>>>>>>>>>>>>  ', flvUrl);
+            if (flvjs.isSupported()) {
+                let flvPlayer = flvjs.createPlayer({
+                    type: 'flv',
+                    url: flvUrl,
+                });
+                let vd_mix = document.createElement('video'); //创建一个video标签
+                vd_mix.autoplay = "true";
+                vd_mix.controls = "true";
+                $("#div_mix").append(vd_mix);
+                flvPlayer.attachMediaElement(vd_mix);
+                flvPlayer.load();
+            }
+        }
     }
 });
 
 //监听：消息发送按钮
 $('#chat-fasong').click(async () => {
     let message = $('.div-textarea').text();
-    sendMessage(message);
-});
-
-//监听：发起连麦按钮
-$('#btn-start-contact').click(() => {
-    let toID = $('#userList').val();
-    if (toID != '') {
-        sendContactMessage('contact', localStreamID, toID); //默认只能 从主播端发起，连麦邀请//否
-    } else {
-        alert(`发起连麦邀请，参数出错：toID：${toID}`);
-    }
-});
-
-//目前只能两个人，逻辑需改变，待修复
-$('#btn-start-mix').click(() => {
-    startMixer();
+    sendMessage(roomID, message);
 });
 
 //打开/关闭聊天框
@@ -94,10 +115,6 @@ $('.chatBtn').click(() => {
 $("#btn-audio-mixer").click(async () => {
     let audio1 = [$('#mix-audio')[0]];
     let re = zg.startMixingAudio(localStreamID, audio1);
-    if (re) {
-        let realyStream = 'zegotest-3212928334-' + localStreamID;
-        zg.streamCenter.publisherList[realyStream].publisher.audioMixList[0].audioMix.gainNode.gain.value = 0.5;//此用于调节背景音 音量的内部对象，暂时性暴露，后续有修改的风险，慎用
-    }
 });
 
 //字符是否为空
