@@ -21,14 +21,28 @@
                 <label class="text-nowrap" style="letter-spacing: 1px;font-weight: normal;">audioDeviceList:&nbsp;
                     &nbsp;</label>
                 <select class="custom-select custom-select-sm" id="audioDeviceList">
-
                 </select>
             </div>
             <div class="d-inline-flex" style="margin-left: 35px;margin-top: 20px;">
                 <label class="text-nowrap" style="letter-spacing: 1px;font-weight: normal;">videoDeviceList:&nbsp;
                     &nbsp;</label>
                 <select class="custom-select custom-select-sm" id="videoDeviceList">
-
+                </select>
+            </div>
+            <div class="d-inline-flex" style="margin-left: 35px;margin-top: 20px;">
+                <label class="text-nowrap" style="letter-spacing: 1px;font-weight: normal;">推流编码:&nbsp;
+                    &nbsp;</label>
+                <select class="custom-select custom-select-sm" id="publishCoder">
+                    <option value= "H264">H264</option>
+                    <option value= "VP8">VP8</option>
+                </select>
+            </div>
+            <div class="d-inline-flex" style="margin-left: 35px;margin-top: 20px;">
+                <label class="text-nowrap" style="letter-spacing: 1px;font-weight: normal;">拉流编码:&nbsp;
+                    &nbsp;</label>
+                <select class="custom-select custom-select-sm" id="playCoder">
+                    <option value= "H264">H264</option>
+                    <option value= "VP8">VP8</option>
                 </select>
             </div>
             <button class="btn btn-primary" id="btn-dirver-nume" type="button" style="margin-left: 8px;">枚举设备</button>

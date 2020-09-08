@@ -214,7 +214,7 @@ async function pushStream(streamID) {
     previewVideo.srcObject = localStream;
 
     let publishOption = {
-        videoCodec: 'H264'
+        videoCodec: $("#publishCoder").val()
     }
     isPublish = zg.startPublishingStream(streamID, localStream, publishOption);
 }
@@ -225,7 +225,7 @@ async function pullStream(streamID) {
     let remoteStream = await zg.startPlayingStream(streamID, {
         video: true,
         audio: true,
-        videoCodec: 'H264'
+        videoCodec: $("#playCoder").val()
     });
     //<video>:渲染播放mediaStream数据
     let div = document.getElementById('div_remote');
