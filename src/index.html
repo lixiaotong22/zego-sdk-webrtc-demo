@@ -33,29 +33,35 @@
                 <label class="text-nowrap" style="letter-spacing: 1px;font-weight: normal;">推流编码:&nbsp;
                     &nbsp;</label>
                 <select class="custom-select custom-select-sm" id="publishCoder">
-                    <option value= "H264">H264</option>
-                    <option value= "VP8">VP8</option>
+                    <option value="H264">H264</option>
+                    <option value="VP8">VP8</option>
                 </select>
             </div>
             <div class="d-inline-flex" style="margin-left: 35px;margin-top: 20px;">
                 <label class="text-nowrap" style="letter-spacing: 1px;font-weight: normal;">拉流编码:&nbsp;
                     &nbsp;</label>
                 <select class="custom-select custom-select-sm" id="playCoder">
-                    <option value= "H264">H264</option>
-                    <option value= "VP8">VP8</option>
+                    <option value="H264">H264</option>
+                    <option value="VP8">VP8</option>
                 </select>
             </div>
             <button class="btn btn-primary" id="btn-dirver-nume" type="button" style="margin-left: 8px;">枚举设备</button>
+            <button class="btn btn-primary" id="btn-mute-video" type="button"
+                style="margin-left: 8px;">打开/关闭流画面</button>
+            <button class="btn btn-primary" id="btn-mute-audio" type="button"
+                style="margin-left: 8px;">打开/关闭流声音</button>
         </div>
         <div style="margin-top: 26px;">
             <button class="btn btn-primary" id="btn-enter-push" type="button">进入房间（推流）</button>
+            <button class="btn btn-primary" id="btn-enter-screen" type="button">屏幕分享（推流）</button>
             <button class="btn btn-primary" id="btn-enter-pull" type="button"
                 style="margin-left: 8px;">进入房间（不推流）</button>
             <button class="btn btn-primary" id="btn-out" type="button" style="margin-left: 8px;">退出房间</button>
             <button class="btn btn-primary" id="btn-start-mix" type="button" style="margin-left: 8px;">发起混流</button>
             <!-- <button class="btn btn-primary" id="btn-stop-mix" type="button" style="margin-left: 8px;">停止混流</button> -->
             <button class="btn btn-primary" id="btn-audio-mixer" type="button" style="margin-left: 8px;">发起混音</button>
-            <audio id="mix-audio" src="./music/Amoonfilledsky.mp3" controls muted loop></audio>
+            <audio id="mix-audio" src="https://b00.cdn.ipalfish.com/0/aud/19/74/6fd31d918509e1479574e5ab010c" controls
+                muted loop crossorigin="anonymous"></audio>
         </div>
         <div id="video_div" style="margin-top: 26px;" class="d-inline-flex">
             <video id="vd_preview" autoplay playsinline muted></video>

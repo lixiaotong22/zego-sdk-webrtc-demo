@@ -9,13 +9,16 @@ import {
     generateToken
 } from './appconfig'
 
-//变量
 var localStream = null;
 var localStreamID = 's' + parseInt(Math.random() * 190000 + 10000); //本地推流ID
+var screenStream = null;
+var screenStreamID = 'ss' + parseInt(Math.random() * 190000 + 10000); //本地推流ID
 var taskID = "";
+
 var isPublish = false;
 var isPlay = false;
 var isMixer = false;
+var isScreen = false;
 
 var roomStreamList = new Array(); //房间的流列表
 var msgCount = 0; //消息总数
@@ -23,6 +26,7 @@ var msgCount = 0; //消息总数
 const localUser = getUser(); //获取本地用户
 const zg = new ZegoExpressEngine(appID, server); //zego引擎对象
 
+/** 初始化SDK方法，设置回调监听 */
 function initSDK() {
     $(".head-div").append(`<img class="border rounded-circle border-primary" src="${require('./assets/img/favicon.png')}" 
                 style="margin-right: 0px;margin-left: 190px;padding-right: 0px;padding-left: 0px;">`);
@@ -86,8 +90,6 @@ function initSDK() {
     })
     //房间广播消息通知
     zg.on('IMRecvBroadcastMessage', (roomID, chatData) => {
-        console.warn(`IMRecvBroadcastMessage, roomID: ${roomID} chatData: ${JSON.stringify(chatData)}`);
-
         var inputMessage = chatData[0].message;
         console.info('接收消息回调，打印数据：  》》》》》 ', '\n' + inputMessage);
         const chatBox = `
@@ -111,7 +113,7 @@ function initSDK() {
     setDevices();
 }
 
-//获取user，需业务侧实现
+/** 获取user，需业务侧实现 */
 function getUser() {
     let uID = 'uID' + parseInt(Math.random() * 190000 + 5000);
     let uName = 'uName' + parseInt(Math.random() * 190000 + 5000);
@@ -122,11 +124,10 @@ function getUser() {
     }
 }
 
-//发送广播消息
+/** 发送广播消息 */
 async function sendMessage(roomID, message1) {
-    console.log(`sendMsg：>>>>>> message：${message1}`);
     let result1 = await zg.sendBroadcastMessage(roomID, message1);
-    console.log(`'sendMsg：>>> result：${result1}`);
+    console.info(`sendMsg：>>> result：${result1}`);
     $('.chatBox-content-demo').append(`
              <div class="clearfloat">
             <div class="author-name">
@@ -143,7 +144,7 @@ async function sendMessage(roomID, message1) {
     $('#chatBox-content-demo').scrollTop($('#chatBox-content-demo')[0].scrollHeight); //聊天框默认最底部
 }
 
-//枚举设备
+/** 枚举设备 */
 async function setDevices() {
     $("#videoDeviceList").html('');
     $('#audioDeviceList').html('');
@@ -161,11 +162,11 @@ async function setDevices() {
     $('#audioDeviceList').html(microphonesHTML);
 }
 
-//进入房间
+/** 进入房间 */
 async function enterRoom(userID, userName, roomID) {
     let token = generateToken(userID); //获取token
-    //登录房间
-    let result = await zg.loginRoom(roomID, token, {
+
+    let result = await zg.loginRoom(roomID, token, { //登录房间
         userID,
         userName
     }, {
@@ -175,7 +176,7 @@ async function enterRoom(userID, userName, roomID) {
     return result;
 }
 
-//退出房间 
+/** 退出房间 */
 async function outRoom(roomID) {
     if (isMixer) {
         zg.stopMixerTask(taskID);
@@ -196,10 +197,21 @@ async function outRoom(roomID) {
         localStream = null;
         isPublish = false;
     }
-    zg.logoutRoom(roomID);
+    if (isScreen) {
+        zg.stopPublishingStream(screenStreamID);
+        zg.destroyStream(screenStream);
+
+        let div = document.getElementById('video_div');
+        let screenVideo = document.getElementById('vd_screen');
+        div.removeChild(screenVideo);
+
+        screenStream = null;
+        isScreen = false;
+    }
+    zg.logoutRoom(roomID); //登出房间
 }
 
-//推流方法
+/** 摄像头采集 - 推流方法 */
 async function pushStream(streamID) {
     let videoInputString = $("#videoDeviceList").val();
     localStream = await zg.createStream({
@@ -219,14 +231,38 @@ async function pushStream(streamID) {
     isPublish = zg.startPublishingStream(streamID, localStream, publishOption);
 }
 
-//拉流方法
+/** 屏幕分享 - 推流方法 */
+async function pushScreenStream(streamID) {
+    screenStream = await zg.createStream({
+        screen: { //videoQuality:4, 增加 frameRate / bitrate 属性
+            audio: true,
+            videoQuality: 2
+        }
+    })
+
+    //<video>:渲染播放mediaStream数据
+    let div = document.getElementById('video_div');
+    let screenVideo = document.createElement('video');
+    screenVideo.id = "vd_screen";
+    screenVideo.autoplay = "true";
+    screenVideo.muted = "true";
+    screenVideo.srcObject = screenStream;
+    div.appendChild(screenVideo);
+
+    let publishOption = {
+        videoCodec: $("#publishCoder").val() //设置推流编码器
+    }
+    isScreen = zg.startPublishingStream(streamID, screenStream, publishOption);
+}
+
+/** 远端流 - 拉流方法 */
 async function pullStream(streamID) {
-    //拉流
     let remoteStream = await zg.startPlayingStream(streamID, {
         video: true,
         audio: true,
         videoCodec: $("#playCoder").val()
     });
+
     //<video>:渲染播放mediaStream数据
     let div = document.getElementById('div_remote');
     let remoteVideo = document.createElement('video');
@@ -238,7 +274,7 @@ async function pullStream(streamID) {
     isPlay = true;
 }
 
-//发起混流任务
+/** 发起混流任务 */
 async function startMixer() {
     taskID = 'tid' + parseInt(Math.random() * 190000 + 10000);
     let mixStreamID = 'mixID' + parseInt(Math.random() * 190000 + 10000); //自动生成混流ID
@@ -299,6 +335,7 @@ async function startMixer() {
 export {
     localStreamID,
     localStream,
+    screenStreamID,
     localUser,
     zg,
     initSDK,
@@ -307,5 +344,6 @@ export {
     outRoom,
     sendMessage,
     startMixer,
-    setDevices
+    setDevices,
+    pushScreenStream
 }
