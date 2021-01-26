@@ -27,7 +27,7 @@ const localUser = getUser(); //获取本地用户
 const zg = new ZegoExpressEngine(appID, server); //zego引擎对象
 
 /** 初始化SDK方法，设置回调监听 */
-function initSDK() {
+async function initSDK() {
     $(".head-div").append(`<img class="border rounded-circle border-primary" src="${require('./assets/img/favicon.png')}" 
                 style="margin-right: 0px;margin-left: 190px;padding-right: 0px;padding-left: 0px;">`);
     //配置日志
@@ -111,6 +111,8 @@ function initSDK() {
 
     //枚举设备
     setDevices();
+    let mediaStream = await zg.createStream();
+    zg.destroyStream(mediaStream);
 }
 
 /** 获取user，需业务侧实现 */
@@ -218,11 +220,13 @@ async function pushStream(streamID) {
         camera: { //camera对象可不传，不传则采用默认设置
             video: true,
             audio: true,
-            videoInput: videoInputString
+            videoInput: videoInputString,
+            videoQuality: 3
         }
     })
 
-    let previewVideo = $('#vd_preview')[0];
+    //let previewVideo = $('#vd_preview')[0];
+    let previewVideo = document.getElementById('vd_preview');
     previewVideo.srcObject = localStream;
 
     let publishOption = {

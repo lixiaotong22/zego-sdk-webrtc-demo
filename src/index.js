@@ -177,3 +177,35 @@ function isEmpty(str) {
         return false;
     }
 }
+
+/** 监听:推第三方视频文件 */
+$("#btn-custom-push").click(async () => {
+    roomID = $('#i_roomID').val() + '';
+    if (isEmpty(roomID)) {
+        alert('请输入对应的 roomID ');
+        return;
+    }
+    if (!isEnter) {
+        isEnter = await enterRoom(localUser.userID, localUser.userName, roomID);
+        if (isEnter) {
+            let localVideo = $('#vd1')[0];
+            const stream = await zg.createStream({
+                custom: {
+                    source: localVideo,
+                    bitrate: 2000
+                }
+            })
+            //推流
+            zg.startPublishingStream("test-0002", stream);
+        }
+    } else {
+        let localVideo = $('#vd1')[0];
+        const stream = await zg.createStream({
+            custom: {
+                source: localVideo
+            }
+        })
+        //推流
+        zg.startPublishingStream("test-0002", stream);
+    }
+});
