@@ -209,3 +209,24 @@ $("#btn-custom-push").click(async () => {
         zg.startPublishingStream("test-0002", stream);
     }
 });
+
+/** 监听（setting.html）: 设置Demo各项配置参数，并跳转 
+ * 
+ * 跳转链接的拼接规则：http://localhost:8080/?appID=&server=&logUrl=&tokenType=&appSign=&serverSecret=
+ */
+$("#btn-setting").click(() => {
+    var input_appID = $("#appID").val();
+    var input_server = $("#server").val();
+    var input_tokenType = $("input[name='tokenType']:checked").val();
+    var input_logUrl = $("#logUrl").val();
+    var input_appSign = $("#appSign").val();
+    var input_serverSecret = $("#serverSecret").val();
+
+    var url = window.location.href; // str = 'https://192.168.1.206:8080/setting.html'
+    var index = url.lastIndexOf("/");
+
+    url = url.substring(0, index + 1);
+    // console.log(url); //结果为：https://192.168.1.206:8080/
+
+    window.location.href = `${url}?appID=${input_appID}&server=${input_server}&logUrl=${input_logUrl}&tokenType=${input_tokenType}&appSign=${input_appSign}&serverSecret=${input_serverSecret}`;
+});

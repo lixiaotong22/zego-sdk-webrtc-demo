@@ -109,10 +109,11 @@ async function initSDK() {
         $('.chatBox-kuang').show();
     });
 
-    //枚举设备
-    setDevices();
     let mediaStream = await zg.createStream();
     zg.destroyStream(mediaStream);
+
+    //枚举设备
+    setDevices();
 }
 
 /** 获取user，需业务侧实现 */

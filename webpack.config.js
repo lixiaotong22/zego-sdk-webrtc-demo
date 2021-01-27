@@ -66,5 +66,9 @@ module.exports = {
             template: 'src/index.html' // 我们原来的index.html路径，作为模板
         }),
         //new CleanWebpackPlugin(),
+        new HtmlWebpackPlugin({
+            filename: 'setting.html', // dist目录下生成的html文件名
+            template: 'src/setting.html' // 我们原来的index.html路径，作为模板
+        }),
     ]
 };

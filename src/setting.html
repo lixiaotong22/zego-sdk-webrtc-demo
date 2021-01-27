@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Express-Demo-Tool</title>
+</head>
+
+<body style="padding-right: 10px;padding-top: 20px;background-color: #f8f9fa;padding-bottom: 90px;padding-left: 90px;">
+    <div style="background-color: #ffffff;text-align:center;float: left;padding-right: 24%;">
+        <div class="content-div" style="margin-top: 60px;">
+
+            <div style="margin-left: 35px;margin-top: 20px;">
+                <strong style="margin-right: 35px;">appID：</strong><input id="appID" type="text" value="">
+            </div>
+            <div style="margin-left: 35px;margin-top: 20px;">
+                <strong style="margin-right: 35px;">server：</strong><input id="server" type="text" value="">
+            </div>
+            <div style="margin-left: 35px;margin-top: 20px;">
+                <strong>Token的类型：</strong>
+                <input type="radio" name="tokenType" value="0" checked="true">测试环境
+                <input type="radio" name="tokenType" value="1">正式环境
+                <input type="radio" name="tokenType" value="2">房间鉴权
+            </div>
+            <div style="margin-left: 35px;margin-top: 20px;">
+                <strong style="margin-right: 35px;">logUrl：</strong><input id="logUrl" type="text" value="">
+            </div>
+            <div style="margin-left: 35px;margin-top: 20px;">
+                <strong style="margin-right: 35px;">appSign：</strong><input id="appSign" type="text" value="">
+            </div>
+            <div style="margin-left: 35px;margin-top: 20px;">
+                <strong style="margin-right: 35px;">serverSecret：</strong><input id="serverSecret" type="text" value="">
+            </div>
+        </div>
+        <div class="content-div" style="margin-top: 30px;">
+            <button class="btn btn-primary" id="btn-setting" type="button" style="text-align:center;">跳转
+                Express测试页面</button>
+        </div>
+    </div>
+    <div style="float: right;">
+        <textarea name="" id="" cols="30" rows="14">
+            说明，使用指南：
+
+            1. 不填置空，则使用默认的值。
+            2. 测试环境，只需填写 AppID 即可。
+            3. 正式环境，填写 AppID，Server，TokenType，LogUrl。
+            4. 当Token类型选择了 房间鉴权，需额外填写 AppSign 和 ServerSecret。
+        </textarea>
+    </div>
+</body>
+
+</html>
